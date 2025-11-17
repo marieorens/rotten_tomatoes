@@ -1,106 +1,68 @@
 "use client";
+
+import { Suspense } from "react";
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
-import Header from "@/components/Header";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 
-export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
+function ResetPasswordForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = decodeURIComponent(searchParams.get("token"));
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post("/api/auth/forgot-password", { email });
-      setSent(true);
-      toast.success("Un email de réinitialisation a été envoyé.");
+      await axios.post("/api/auth/reset-password", { token, password });
+      setSuccess(true);
+      toast.success("Mot de passe réinitialisé ! Vous pouvez vous connecter.");
+      setTimeout(() => router.push("/login"), 2000);
     } catch (err) {
-      toast.error("Erreur lors de l'envoi. Vérifiez l'email.");
+      toast.error("Erreur lors de la réinitialisation.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <div className="relative">
-        <Header />
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <div className="w-full max-w-md bg-white p-8 rounded shadow">
+        <h1 className="text-2xl font-bold mb-4 text-center">Réinitialiser le mot de passe</h1>
+        {success ? (
+          <p className="text-green-600 text-center">Mot de passe modifié ! Redirection...</p>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <input
+              type="password"
+              className="border rounded px-3 py-2"
+              placeholder="Nouveau mot de passe"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button
+              type="submit"
+              className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+              disabled={loading}
+            >
+              {loading ? "Envoi..." : "Réinitialiser"}
+            </button>
+          </form>
+        )}
       </div>
-
-      <main className="relative pt-20">
-        <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
-            <Card className="w-full max-w-md bg-gray-800/50 border-gray-700">
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl font-bold text-white text-center">
-                  Mot de passe oublié
-                </CardTitle>
-                <CardDescription className="text-gray-400 text-center">
-                  Entrez votre email pour recevoir un lien de réinitialisation
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {sent ? (
-                  <p className="text-green-600 text-center">Vérifiez votre boîte mail pour le lien de réinitialisation.</p>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-gray-300">
-                        Email
-                      </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Votre email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-400 focus-visible:border-gray-600 focus-visible:ring-gray-600"
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Envoi...
-                        </>
-                      ) : (
-                        "Envoyer le lien"
-                      )}
-                    </Button>
-                  </form>
-                )}
-                <div className="mt-6 flex flex-col items-center gap-2 text-sm">
-                  <Link
-                    href="/login"
-                    className="text-blue-400 hover:text-blue-300"
-                  >
-                    Retour à la connexion
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </main>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div>Chargement...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
