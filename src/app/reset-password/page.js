@@ -1,4 +1,6 @@
+export const dynamic = "force-dynamic";
 "use client";
+
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
@@ -30,9 +32,14 @@ export default function ResetPasswordPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
       <div className="w-full max-w-md bg-white p-8 rounded shadow">
-        <h1 className="text-2xl font-bold mb-4 text-center">Réinitialiser le mot de passe</h1>
+        <h1 className="text-2xl font-bold mb-4 text-center">
+          Réinitialiser le mot de passe
+        </h1>
+
         {success ? (
-          <p className="text-green-600 text-center">Mot de passe modifié ! Redirection...</p>
+          <p className="text-green-600 text-center">
+            Mot de passe modifié ! Redirection...
+          </p>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <input
@@ -43,6 +50,7 @@ export default function ResetPasswordPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+
             <button
               type="submit"
               className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
